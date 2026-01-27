@@ -2,14 +2,17 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 
-const healthRoutes = require("./routes/health.routes");
+const connectDB = require("./config/db");
+const checkRoutes = require("./routes/check.routes");
 
 const app = express();
+
+connectDB();
 
 app.use(cors());
 app.use(express.json());
 
-app.use("/api/health", healthRoutes);
+app.use("/api/check", checkRoutes);
 
 const PORT = process.env.PORT || 3000;
 
