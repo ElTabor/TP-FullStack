@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 
 const authRoutes = require("./routes/auth.routes");
+const protectedRoutes = require("./routes/protected.routes");
+
 
 const app = express();
 
@@ -14,6 +16,8 @@ mongoose
   .catch((err) => console.error("MongoDB connection error:", err));
 
 app.use("/api/auth", authRoutes);
+app.use("/api/protected", protectedRoutes);
+
 
 app.get("/check", (req, res) => {
   res.status(200).json({ status: "OK" });
