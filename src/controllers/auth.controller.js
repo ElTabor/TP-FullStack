@@ -1,18 +1,15 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const AppError = require("../utils/AppError");
 
-const register = async (req, res) => {
+const register = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
-    }
-
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(409).json({ message: "User already exists" });
+      return next(new AppError("User already exists", 409));
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -23,45 +20,41 @@ const register = async (req, res) => {
       password: hashedPassword,
     });
 
-    return res.status(201).json({
+    res.status(201).json({
       message: "User registered successfully",
       userId: user._id,
     });
   } catch (error) {
-    return res.status(500).json({ message: "Auth error", error: error.message });
+    next(error);
   }
 };
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
-    }
-
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return next(new AppError("Invalid credentials", 401));
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return next(new AppError("Invalid credentials", 401));
     }
 
-  const token = jwt.sign(
-    { userId: user._id, role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: "1h" }
-  );
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
 
-    return res.status(200).json({
+    res.status(200).json({
       message: "Login successful",
       token,
     });
   } catch (error) {
-    return res.status(500).json({ message: "Auth error", error: error.message });
+    next(error);
   }
 };
 
