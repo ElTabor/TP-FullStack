@@ -60,8 +60,12 @@ const login = async (req, res, next) => {
     const refreshToken = jwt.sign(
       { userId: user._id },
       process.env.JWT_REFRESH_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "7d" }      
     );
+
+    user.refreshToken = refreshToken;
+    await user.save();
+
 
     res
       .cookie("refreshToken", refreshToken, {
@@ -78,5 +82,23 @@ const login = async (req, res, next) => {
   }
 };
 
+const logout = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.userId);
 
-module.exports = { register, login };
+    if (!user) {
+      return next(new AppError("User not found", 404));
+    }
+
+    user.refreshToken = null;
+    await user.save();
+
+    res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+module.exports = { register, login, logout};

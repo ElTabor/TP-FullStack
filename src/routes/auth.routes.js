@@ -3,9 +3,11 @@ const jwt = require("jsonwebtoken");
 const express = require("express");
 const router = express.Router();
 
-const { register, login } = require("../controllers/auth.controller");
+const { register, login, logout } = require("../controllers/auth.controller");
 const validate = require("../middlewares/validate.middleware");
 const { registerSchema, loginSchema } = require("../validators/auth.schema");
+const authMiddleware = require("../middlewares/auth.middleware");
+
 
 router.post("/register", validate(registerSchema), register);
 router.post("/login", validate(loginSchema), login);
@@ -30,6 +32,8 @@ router.post("/refresh", (req, res, next) => {
     next(error);
   }
 });
+router.post("/logout", authMiddleware, logout);
+
 
 
 module.exports = router;
