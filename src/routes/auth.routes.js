@@ -7,10 +7,13 @@ const { register, login, logout } = require("../controllers/auth.controller");
 const validate = require("../middlewares/validate.middleware");
 const { registerSchema, loginSchema } = require("../validators/auth.schema");
 const authMiddleware = require("../middlewares/auth.middleware");
+const { loginLimiter } = require("../middlewares/rateLimit.middleware");
+
 
 
 router.post("/register", validate(registerSchema), register);
-router.post("/login", validate(loginSchema), login);
+router.post("/login", loginLimiter, validate(loginSchema), login);
+
 
 router.post("/refresh", (req, res, next) => {
   try {
