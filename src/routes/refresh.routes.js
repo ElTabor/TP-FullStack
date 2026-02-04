@@ -1,15 +1,3 @@
-const jwt = require("jsonwebtoken");
-
-const express = require("express");
-const router = express.Router();
-
-const { register, login } = require("../controllers/auth.controller");
-const validate = require("../middlewares/validate.middleware");
-const { registerSchema, loginSchema } = require("../validators/auth.schema");
-
-router.post("/register", validate(registerSchema), register);
-router.post("/login", validate(loginSchema), login);
-
 router.post("/refresh", (req, res, next) => {
   try {
     const token = req.cookies.refreshToken;
@@ -18,7 +6,6 @@ router.post("/refresh", (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
-
     const accessToken = jwt.sign(
       { userId: decoded.userId },
       process.env.JWT_ACCESS_SECRET,
@@ -30,6 +17,3 @@ router.post("/refresh", (req, res, next) => {
     next(error);
   }
 });
-
-
-module.exports = router;

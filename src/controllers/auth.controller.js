@@ -3,6 +3,14 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const AppError = require("../utils/AppError");
 
+const generateAccessToken = (payload) =>
+  jwt.sign(payload, process.env.JWT_ACCESS_SECRET, { expiresIn: "15m" });
+
+const generateRefreshToken = (payload) =>
+  jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" });
+
+
+
 const register = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -43,19 +51,32 @@ const login = async (req, res, next) => {
       return next(new AppError("Invalid credentials", 401));
     }
 
-    const token = jwt.sign(
+    const accessToken = jwt.sign(
       { userId: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      process.env.JWT_ACCESS_SECRET,
+      { expiresIn: "15m" }
     );
 
-    res.status(200).json({
-      message: "Login successful",
-      token,
-    });
+    const refreshToken = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res
+      .cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        sameSite: "strict",
+      })
+      .status(200)
+      .json({
+        message: "Login successful",
+        accessToken,
+      });
   } catch (error) {
     next(error);
   }
 };
+
 
 module.exports = { register, login };
