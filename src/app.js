@@ -23,6 +23,7 @@ mongoose
 app.use("/api/auth", authRoutes);
 app.use("/api/protected", protectedRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/tasks", require("./routes/task.routes"));
 app.use(errorHandler);
 
 
