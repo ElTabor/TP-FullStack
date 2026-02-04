@@ -10,6 +10,15 @@ const getTasks = async (req, res, next) => {
   }
 };
 
+const getTask = async (req, res, next) => {
+  try {
+    const task = await Task.findOne({ _id: req.params.id, user: req.user.userId });
+    res.status(200).json(task);
+  } catch (error) {
+    next(error);
+  }
+}
+
 const createTask = async (req, res, next) => {
   try {
     const task = await Task.create({
@@ -60,6 +69,7 @@ const deleteTask = async (req, res, next) => {
 
 module.exports = {
   getTasks,
+  getTask,
   createTask,
   updateTask,
   deleteTask
